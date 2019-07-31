@@ -138,13 +138,15 @@ Qed.
 
 Arguments nth : simpl never.
 
+Unset Printing Universes.
+
 Lemma smith2xnP : forall n (M : 'M[R]_(2,1 + (1 + n))),
   smith_spec M (smith2xn smith2x2 M).
 Proof.
 elim=> [|n ih]; first exact: smith2x2P.
 rewrite [n.+1]/(1 + n)%N => M /=; set A1 := lsubmx M; set A2 := rsubmx M.
 case: ih=> /= P1 d1 Q1 h1 h2 hP1 hQ1; set E := rsubmx _.
-set C := row_mx (P1 *m A1) _ : 'M[R]_(2,1 + (1 + _)); set D := row_mx _ _.
+set C := row_mx (P1 *m A1) _ : 'M[R]_(2,1 + (1 + _)); set D := row_mx (col 0 C) (col 1 C).
 case: smith2x2P=> /= P2 d2 Q2 H1 H2 hP2 hQ2.
 set H := row_mx (P2 *m D *m Q2) _ : 'M[R]_(1 + _, 1 + (1 + _)).
 case: (smith1xnP _ smith2x2P)=> L1 d R1; rewrite -mulmxA=> hLdR dsorted hL1 hR1.
@@ -177,7 +179,7 @@ have -> : lift0_mx L1 *m P2 *m C *m block_mx Q2 0 0 1%:M =
           lift0_mx L1 *m block_mx d2`_0%:M r 0 H'.
   rewrite -!mulmxA; congr (_ *m _); rewrite mulmxA [C]surgery2 -mulmxA.
   rewrite (mul_row_block D) ?simplmx mul_mx_row mulmxA -/H -[H]submxK.
-  f_equal; apply/rowP=> i; rewrite !mxE H1 ?ord1 ?lshift0;
+  f_ap; apply/rowP=> i; rewrite !mxE H1 ?ord1 ?lshift0;
   by case: splitP=> // j hj; rewrite !mxE -hj.
 rewrite -[lift0_mx L1 *m _ *m _]mulmxA (mulmx_block d2`_0%:M r) ?simplmx.
 rewrite mulmx_block ?simplmx mulmxA -mulmxDl mulmxN mul_scalar_mx.
@@ -186,7 +188,7 @@ have -> : - (d2`_0 *: r') + r = 0.
   case: odivrP=> /= [w ->|]; first by rewrite mulrC addrC subrr mxE.
   move: (Hdvd (lshift _ 0) (rshift 1 i)); rewrite -[H]submxK block_mxEur.
   by case/dvdrP=> w hw /(_ w); rewrite hw eqxx.
-rewrite mul0mx diag_mx_seq_cons; f_equal; rewrite -[H']hsubmxK mulmxA.
+rewrite mul0mx diag_mx_seq_cons; f_ap; rewrite -[H']hsubmxK mulmxA.
 rewrite (mul_mx_row _ (lsubmx H')) (mul_row_block (L1 *m lsubmx H')) ?simplmx.
 rewrite -mulmxA hLdR; apply/rowP=> i; rewrite !mxE.
 case: splitP=> j ->; rewrite !mxE //= mulr0n big_ord1 !mxE /H' /E row_mxKr h1.
@@ -196,10 +198,12 @@ Qed.
 
 Arguments smith2xn : simpl never.
 
+(* FIXME unfolding [smithmxn_rec] loops! *)
+
 Lemma smithmxn_recP : forall m n (M : 'M[R]_(1 + (1 + m),1 + (1 + n))),
   smith_spec M (smithmxn_rec smith2x2 M).
 Proof.
-elim=> [|m ih [|n] A] /=; first exact: smith2xnP.
+elim => [|m ih [|n] A] /=; first exact: smith2xnP.
   case: smith2xnP=> L0 d R0 h1 h2 h3 h4.
   constructor; rewrite ?unitmx_tr //; apply/trmx_inj.
   by rewrite !trmx_mul !trmxK tr_diag_mx_seq mulmxA.

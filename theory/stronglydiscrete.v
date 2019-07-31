@@ -17,43 +17,43 @@ Local Open Scope ring_scope.
 (** Strongly discrete rings *)
 Module StronglyDiscrete.
 
-CoInductive member_spec (R : ringType) n (x : R) (I : 'cV[R]_n)
+Monomorphic CoInductive member_spec (R : ringType) n (x : R) (I : 'cV[R]_n)
   : option 'rV[R]_n -> Type :=
 | Member J of x%:M = J *m I : member_spec x I (Some J)
 | NMember of (forall J, x%:M != J *m I) : member_spec x I None.
 
-Record mixin_of (R : ringType) : Type := Mixin {
+Monomorphic Record mixin_of (R : ringType) : Type := Mixin {
   member : forall n, R -> 'cV_n -> option 'rV_n;
   _ : forall n (x : R) (I : 'cV_n), member_spec x I (member x I)
 }.
 
 Section ClassDef.
 
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : GRing.IntegralDomain.class_of R;
   mixin : mixin_of (GRing.IntegralDomain.Pack base)
 }.
 Local Coercion base : class_of >-> GRing.IntegralDomain.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@GRing.IntegralDomain.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@GRing.IntegralDomain.Pack T b0)) :=
   fun bT b & phant_id (GRing.IntegralDomain.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m).
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
 
 End ClassDef.
 
@@ -131,7 +131,7 @@ Lemma subidP m n (I : 'cV[R]_m) (J : 'cV[R]_n) :
 Proof.
 apply: (iffP ('forall_(memberP _ _))); last first.
   move=> [D ->] i; exists (row i D).
-  apply/matrixP => i' j'; rewrite !ord1 {i' j'} !mxE /=.
+  apply/matrixP => i' j'; rewrite !ord1 {i' j'}; rewrite !mxE /=.
   by apply: eq_bigr => l _; rewrite !mxE.
 move=> HJ; pose M i j := projT1 (sig_eqW (HJ i)) 0 j.
 exists (\matrix_(i,j) M i j); apply/colP => i; rewrite mxE.
@@ -341,7 +341,7 @@ case/subidP => C hC /subidP [D hD]; apply/subidP.
 by exists (col_mx C D); rewrite mul_col_mx -hC -hD.
 Qed.
 
-Lemma addid_congr m n p o (I: 'cV[R]_m) (J: 'cV[R]_n) (K: 'cV[R]_p) (L : 'cV_o) :
+Lemma addid_congr m n p u (I: 'cV[R]_m) (J: 'cV[R]_n) (K: 'cV[R]_p) (L : 'cV_u) :
   (I <= K -> J <= L -> I +i J <= K +i L)%IS.
 Proof.
 case/subidP => X hX; case/subidP => Y hY; apply/subidP.
@@ -496,8 +496,8 @@ Lemma scale_mulidr a n m (I : 'cV[R]_n) (J : 'cV[R]_m) :
   (a *: (I *i J) :=: (a *: I) *i J)%IS.
 Proof. by rewrite scale_trmx scale_mxvec -!mul_scalar_mx /mulid -mulmxA. Qed.
 
-Lemma subid_mulid_congr m n p o
-  (I : 'cV[R]_m) (J : 'cV[R]_n) (K : 'cV[R]_p) (L : 'cV_o) :
+Lemma subid_mulid_congr m n p u
+  (I : 'cV[R]_m) (J : 'cV[R]_n) (K : 'cV[R]_p) (L : 'cV_u) :
   (I <= K)%IS -> (J <= L)%IS -> (I *i J <= K *i L)%IS.
 Proof.
 move => h1 h2.
@@ -656,20 +656,23 @@ Qed.
 
 (** Ideal intersection *)
 
+End IdealTheory.
+
+End StronglyDiscreteTheory.
+
 Section IdealIntersection.
 
-Variable cap_size : forall n m, 'cV[R]_n -> 'cV[R]_m -> nat.
+Monomorphic Variable R : stronglyDiscreteType.
+Monomorphic Variable cap_size : forall n m, 'cV[R]_n -> 'cV[R]_m -> nat.
 
-CoInductive int_spec m n (I : 'cV[R]_m) (J : 'cV[R]_n) : 'cV[R]_(cap_size I J).+1 -> Type :=
+Local Notation "A <= B" := (subid A B) : ideal_scope.
+
+Monomorphic CoInductive int_spec m n (I : 'cV[R]_m) (J : 'cV[R]_n) : 'cV[R]_(cap_size I J).+1 -> Type :=
   IntSpec cap of (cap <= I)%IS
   & (cap <= J)%IS
   & (forall x, member x I -> member x J -> member x cap) : int_spec cap.
 
 End IdealIntersection.
-
-End IdealTheory.
-
-End StronglyDiscreteTheory.
 
 Notation "A <= B" := (subid A B) : ideal_scope.
 Notation "A <= B <= C" := ((subid A B) && (subid B C)) : ideal_scope.
@@ -702,9 +705,11 @@ rewrite !mxE /= !mulr1n => ->.
 by rewrite mulrC.
 Qed.
 
-Definition bezout_stronglyDiscreteMixin := StronglyDiscrete.Mixin bmember_correct.
-Canonical Structure bezout_stronglyDiscreteType :=
-  Eval hnf in StronglyDiscreteType R bezout_stronglyDiscreteMixin.
-
 End BezoutStronglyDiscrete.
+
+Monomorphic Definition bezout_stronglyDiscreteMixin (R : bezoutDomainType) :=
+  StronglyDiscrete.Mixin (@bmember_correct R).
+Canonical Structure bezout_stronglyDiscreteType (R : bezoutDomainType) :=
+  Eval hnf in StronglyDiscreteType R (bezout_stronglyDiscreteMixin R).
+
 Hint Resolve subid_refl sub0id subid1.

@@ -100,10 +100,10 @@ Proof.
 apply/matrixP => i j; rewrite !mxE /lift_pred !split1.
 case: (oapp _ _ (unlift 0 i)) => x.
   rewrite unlift_none /= [x]ord1 !mxE !split1.
-  case: (oapp _ _ (unlift 0 j)) => y; first by rewrite unlift_none [y]ord1.
+  destruct (oapp _ _ (unlift 0 j)) as [y|y]; first by rewrite unlift_none [y]ord1.
   by rewrite liftK mxE.
 rewrite liftK /= !mxE !split1.
-case: (oapp _ _ (unlift 0 j)) => y; first by rewrite unlift_none mxE [y]ord1.
+destruct (oapp _ _ (unlift 0 j)) as [y|y]; first by rewrite unlift_none mxE [y]ord1.
 by rewrite liftK mxE.
 Qed.
 
@@ -197,7 +197,7 @@ Proof.
 rewrite (expand_det_col _ 0) !big_ord_recl big_ord0 addr0 /cofactor /=.
 rewrite ?(addn0,expr0,mul1r) /bump leq0n /= addn0 expr1.
 do 2! rewrite [X in \det X]mx11_scalar det_scalar1 /=.
-by rewrite !mxE !mulNr mul1r mulrN; do ?f_equal; apply/ord_inj.
+by rewrite !mxE !mulNr mul1r mulrN; do ?f_ap; apply/ord_inj.
 Qed.
 
 (* Sanity check of the definiton *)

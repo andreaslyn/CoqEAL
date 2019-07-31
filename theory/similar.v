@@ -66,8 +66,6 @@ split=> [p q|]; apply/polyP=> i; last by rewrite coef_map !coef1.
 by rewrite coefMr coef_map coefM; apply: eq_bigr => j _; rewrite !coef_map.
 Qed.
 
-Canonical phi_rmorphism := RMorphism phi_is_rmorphism.
-
 Definition phi_inv (p : {poly R^c}) :=
   map_poly (fun x : R^c => x : R) p : {poly R}^c.
 
@@ -97,15 +95,17 @@ Definition rscalp_l p q := ((redivp_l p q).1).1.
 Definition rdvdp_l p q := rmodp_l q p == 0.
 Definition rmultp_l := [rel m d | rdvdp_l d m].
 
-Lemma ltn_rmodp_l p q : (size (rmodp_l p q) < size q) = (q != 0).
+End RingPseudoDivision.
+
+Monomorphic Canonical phi_rmorphism R := RMorphism (@phi_is_rmorphism R).
+
+Lemma ltn_rmodp_l (R : ringType) p q : (size (@rmodp_l R p q) < size q) = (q != 0).
 Proof.
 have := ltn_rmodp (phi p) (phi q).
-rewrite -(rmorph0 phi_rmorphism) (inj_eq (can_inj phiK)) => <-.
-rewrite /rmodp_l /redivp_l /rmodp; case: (redivp _ _)=> [[k q'] r'] /=.
+rewrite -(rmorph0 (phi_rmorphism R)) (inj_eq (can_inj (@phiK R))) => <-.
+rewrite /rmodp_l /redivp_l /rmodp; destruct (redivp _ _) as [[k q'] r']; rewrite /=.
 by rewrite !size_map_inj_poly.
 Qed.
-
-End RingPseudoDivision.
 
 Module mon.
 
@@ -121,9 +121,17 @@ Lemma rdivp_l_eq p :
   p = d * (rdivp_l p d) + (rmodp_l p d).
 Proof.
 have mon_phi_d: phi d \is monic by rewrite monic_map_inj.
-apply:(can_inj (@phiK R)); rewrite {1}[phi p](rdivp_eq mon_phi_d) rmorphD.
+apply:(can_inj (@phiK R)).
+refine ((paths_rec_r (paths^~ (phi _)) _ (rdivp_eq mon_phi_d (phi p)))).
+rewrite rmorphD.
 rewrite rmorphM /rdivp_l /rmodp_l /redivp_l /rdivp /rmodp.
-by case: (redivp _ _)=> [[k q'] r'] /=; rewrite !phi_invK.
+refine (
+  match redivp (phi p) (phi d) as r return
+    r.1.2 * phi d + r.2 =
+      phi_rmorphism R (r.1.1, phi_inv r.1.2, phi_inv r.2).1.2 * phi_rmorphism R d +
+      phi_rmorphism R (r.1.1, phi_inv r.1.2, phi_inv r.2).2
+  with (k, q', r') => _ end).
+by rewrite /=; rewrite !phi_invK.
 Qed.
 
 End MonicDivisor.
@@ -493,7 +501,7 @@ have {H}H: M0 * ('X - A%:P) * N0 = (1 - ('X - B%:P) * R1) * ('X - B%:P).
   rewrite mulNr -![_ * N1 * _]mulrA HN1 2!mulrBl.
   rewrite ![_ * (phi N - N0)]mulrBr ![(phi M - M0) * _]mulrBl.
   rewrite -[_ * _ * phi N]mulrA -!rmorphM divrr // mulVr // !rmorph1 !mulr1.
-  rewrite mul1r 2!mulrBl H 3!opprD !opprK !addrA addrN add0r -{1 3}H.
+  rewrite mul1r 2!mulrBl H 3!opprD !opprK !addrA addrN add0r -{1}H -{2}H.
   rewrite !mulrA -[_ * _ * phi M]mulrA -[_ * _ * phi N^-1]mulrA -!rmorphM.
   rewrite divrr // mulVr // !rmorph1 !mulr1 opprB addrA.
   rewrite -{1}[_ + _ - B%:P]addrA subrK (addrC (M0 * _ * _)) addrK.
@@ -575,8 +583,8 @@ have Hx12: (@equivalent _ 1 1 1 1 x1%:M x2%:M).
   split=> //; case/eqdP: Hxp=> c Hc Hcx.
   rewrite conform_mx_id.
   exists c%:M; exists 1%:M; split.
-    +by rewrite -scalemx1 unitmxZ // unitmx1.
-    +by rewrite unitmx1. 
+    + by rewrite -scalemx1 unitmxZ // unitmx1.
+    + by rewrite unitmx1.
   by rewrite mul_scalar_mx scale_scalar_mx mulmx1 Hcx. 
 apply: (equiv_dgblockmx Hx12).
 case: n=> [|n]; first exact: equiv0l.

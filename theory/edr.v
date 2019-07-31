@@ -19,14 +19,14 @@ Local Open Scope ring_scope.
 (** Elementary divisor rings *)
 Module EDR.
 
-CoInductive smith_spec (R : dvdRingType) m n M
+Monomorphic CoInductive smith_spec (R : dvdRingType) m n M
   : 'M[R]_m * seq R * 'M[R]_n -> Type :=
     SmithSpec P d Q of P *m M *m Q = diag_mx_seq m n d
                      & sorted %|%R d
                      & P \in unitmx
                      & Q \in unitmx : smith_spec M (P,d,Q).
 
-Record mixin_of (R : dvdRingType) : Type := Mixin {
+Monomorphic Record mixin_of (R : dvdRingType) : Type := Mixin {
   smith : forall m n, 'M[R]_(m,n) -> 'M[R]_m * seq R * 'M[R]_n;
   _ : forall m n (M : 'M[R]_(m,n)), smith_spec M (smith M)
 }.
@@ -34,32 +34,32 @@ Record mixin_of (R : dvdRingType) : Type := Mixin {
 Section ClassDef.
 
 (** EDRs are based on dvdrings *)
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : DvdRing.class_of R;
   mixin : mixin_of (DvdRing.Pack base)
 }.
 Local Coercion base : class_of >-> DvdRing.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@DvdRing.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@DvdRing.Pack T b0)) :=
   fun bT b & phant_id (DvdRing.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m) .
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
-Definition dvdRingType := DvdRing.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition dvdRingType := DvdRing.Pack class.
 
 End ClassDef.
 
@@ -102,7 +102,7 @@ Export EDR.Exports.
 Definition smith R := EDR.smith (EDR.class R).
 Definition smith_spec := EDR.smith_spec.
 
-Section EDR_Theory.
+Section EDR_Theory1.
 
 Variable R : edrType.
 
@@ -134,16 +134,22 @@ rewrite -(lshift0 1 0) mxE (row_mxEl a%:M) 2!mxE (row_mxEr a%:M) => <-.
 by rewrite -!mulrA -mulrDr dvdr_mull // dvdr_add ?dvdr_mulr ?mxE.
 Qed.
 
-Definition gcdMixin := GcdDomain.Mixin gcd_edrP.
-Canonical gcdType   := Eval hnf in GcdDomainType R gcdMixin.
+End EDR_Theory1.
+
+Monomorphic Definition gcdMixin R := GcdDomain.Mixin (@gcd_edrP R).
+Monomorphic Canonical gcdType (R : edrType) := Eval hnf in GcdDomainType R (@gcdMixin R).
 
 (** The existence of an algorithm computing Smith normal form implies
 the the ring is a Bézout domain *)
-Definition bezout_edr a b : R * R :=
+Monomorphic Definition bezout_edr (R : edrType) a b : R * R :=
   let: (P,d,Q) := smith (row_mx a%:M b%:M : 'rV_2)
   in (P 0 0 * Q 0 0,P 0 0 * Q (rshift 1 0) 0).
 
-Lemma bezout_edrP a b : BezoutDomain.bezout_spec a b (bezout_edr a b).
+Section EDR_Theory2.
+
+Variable R : edrType.
+
+Lemma bezout_edrP (a b : R) : BezoutDomain.bezout_spec a b (bezout_edr a b).
 Proof.
 have := erefl (gcd_edr a b); rewrite {-1}/gcd_edr /smith_seq.
 rewrite /bezout_edr; case: smithP => /= P d Q heq hsorted Punitmx Qunitmx hg.
@@ -155,12 +161,20 @@ rewrite -{1}(lshift0 1 0) mxE (row_mxEl a%:M) 2!mxE (row_mxEr a%:M) !mxE !mulr1n
 by rewrite mulrAC [_ * b * _]mulrAC=> ->.
 Qed.
 
-Definition bezoutMixin := BezoutDomainMixin bezout_edrP.
-Canonical bezoutType   := Eval hnf in BezoutDomainType R bezoutMixin.
+End EDR_Theory2.
+
+Monomorphic Definition bezoutMixin R := BezoutDomainMixin (@bezout_edrP R).
+Monomorphic Canonical bezoutType (R : edrType) := Eval hnf in BezoutDomainType R (bezoutMixin R).
 
 (* Hence are EDRs also strongly discrete *)
-Definition stronglyDiscreteMixin := bezout_stronglyDiscreteMixin [bezoutDomainType of R].
-Canonical stronglyDiscreteType   := Eval hnf in StronglyDiscreteType R stronglyDiscreteMixin.
+Monomorphic Definition stronglyDiscreteMixin (R : edrType) :=
+  bezout_stronglyDiscreteMixin [bezoutDomainType of R].
+Monomorphic Canonical stronglyDiscreteType (R : edrType) :=
+  Eval hnf in StronglyDiscreteType R (stronglyDiscreteMixin R).
+
+Section EDR_Theory3.
+
+Variable R : edrType.
 
 (* As we have a Smith normal form algorithm we can compute ker and coker *)
 Section snf_coherent.
@@ -271,10 +285,15 @@ apply: (iffP idP)=> [|[Y ->]]; last by rewrite -mulmxA mul_kermx mulmx0.
 by move/eqP/mulmxKV_kermx=> hX; exists (X *m col_ebase M).
 Qed.
 
-Definition coherentMixin := CoherentRing.Mixin kermxP.
-Canonical coherentType   := Eval hnf in CoherentRingType R coherentMixin.
-
 End snf_coherent.
+End EDR_Theory3.
+
+Monomorphic Definition coherentMixin R := CoherentRing.Mixin (@kermxP R).
+Monomorphic Canonical coherentType (R : edrType) := Eval hnf in CoherentRingType R (coherentMixin R).
+
+Section EDR_Theory4.
+
+Variable R : edrType.
 
 (** Beginning of unicity *)
 Section Preunicity.
@@ -295,9 +314,9 @@ Lemma minor_diag_mx_seq :
 Proof.
 elim: k=>[f g|j IHj f g Hf Hg Hfg]; first by rewrite /minor det_mx00 big_ord0.
 have: perm_eq [seq f x | x in 'I_j.+1] [seq g x | x in 'I_j.+1].
-  have [||e _] := leq_size_perm _ Hfg; first by rewrite map_inj_uniq ?enum_uniq.
-    by rewrite !size_map.
-  by rewrite uniq_perm_eq // map_inj_uniq // enum_uniq.
+  have [e _||] := leq_size_perm _ Hfg; [|by rewrite map_inj_uniq ?enum_uniq|].
+    by rewrite uniq_perm_eq // map_inj_uniq // enum_uniq.
+  by rewrite !size_map.
 have Ht : size (codom g) == j.+1 by rewrite size_codom card_ord.
 have -> : image g 'I_j.+1 = Tuple Ht by [].
 case/tuple_perm_eqP=> p Hp .
@@ -347,7 +366,7 @@ rewrite big1 ?add0r /cofactor=> [|i _]; last first.
   by rewrite !mxE !ffunE eqn_leq leqNgt (ltn_ord i) andFb mul0r.
 rewrite !mxE !ffunE eqxx exprD -expr2 sqrr_sign mul1r.
 rewrite /row' /col'; set M := matrix_of_fun _ _.
-rewrite big_ord_recr /= (IHj IH) mulr1n mulrC; do 2!f_equal.
+rewrite big_ord_recr /= (IHj IH) mulr1n mulrC; do 2!f_ap.
 apply/matrixP=> i l; rewrite !mxE !ffunE /= /bump.
 by do 2!rewrite leqNgt (ltn_ord _) add0n.
 Qed.
@@ -370,8 +389,8 @@ Qed.
 
 Lemma eqd_seq_gcdr :
   \prod_(i < k) s`_i %=
-  \big[(@gcdr gcdType)/0]_(f : {ffun 'I_k -> 'I_m})
-  (\big[(@gcdr gcdType)/0]_(g : {ffun 'I_k -> 'I_n}) minor f g (diag_mx_seq m n s)).
+  \big[(@gcdr (gcdType R))/0]_(f : {ffun 'I_k -> 'I_m})
+  (\big[(@gcdr (gcdType R))/0]_(g : {ffun 'I_k -> 'I_n}) minor f g (diag_mx_seq m n s)).
 Proof.
 apply/andP; split; last first.
   rewrite prod_minor_seq; set j := [ffun _ => _].
@@ -451,8 +470,8 @@ Qed.
 
 Lemma Smith_gcdr_spec :
   \prod_(i < k) s`_i %=
-  \big[(@gcdr gcdType)/0]_(f : {ffun 'I_k -> 'I_m})
-   (\big[(@gcdr gcdType)/0]_(g : {ffun 'I_k -> 'I_n}) minor f g A) .
+  \big[(@gcdr (gcdType R))/0]_(f : {ffun 'I_k -> 'I_m})
+   (\big[(@gcdr (gcdType R))/0]_(g : {ffun 'I_k -> 'I_n}) minor f g A) .
 Proof.
 rewrite (eqd_ltrans eqd_seq_gcdr).
 have [ _ _ [M [N [_ _ Heqs]]]]:= HAs.
@@ -462,8 +481,8 @@ rewrite conform_mx_id in Hseq.
 have HdivmA p q k1 (B C : 'M[R]_(p,q)) (M1 : 'M_p) (N1 : 'M_q) :
    forall (H : M1 *m C *m N1 = B),
    forall (f : 'I_k1 -> 'I_p) (g : 'I_k1 -> 'I_q),
-   \big[(@gcdr gcdType)/0]_(f0 : {ffun 'I_k1 -> 'I_p})
-    \big[(@gcdr gcdType)/0]_(g0 : {ffun 'I_k1 -> 'I_q}) minor f0 g0 C
+   \big[(@gcdr (gcdType R))/0]_(f0 : {ffun 'I_k1 -> 'I_p})
+    \big[(@gcdr (gcdType R))/0]_(g0 : {ffun 'I_k1 -> 'I_q}) minor f0 g0 C
     %| minor f g B.
   move=> H f g.
   have HBC: minor f g B =  \sum_(f0 : {ffun 'I__ -> 'I__ } | strictf f0)
@@ -517,4 +536,4 @@ by rewrite -(eqd_mul2l _ _ H0) (eqd_rtrans (eqd_mulr _ H1)) eqd_sym.
 Qed.
 
 End Unicity.
-End EDR_Theory.
+End EDR_Theory4.

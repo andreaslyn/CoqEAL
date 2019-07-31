@@ -291,7 +291,7 @@ Local Open Scope ring_scope.
 
 Module RPdiv.
 
-Section RingPseudoDivision.
+Section RingPseudoDivision1.
 
 Variable R : ringType.
 Implicit Types d p q r : {poly R}.
@@ -314,7 +314,16 @@ split=> [p q|]; apply/polyP=> i; last by rewrite coef_map !coef1.
 by rewrite coefMr coef_map coefM; apply: eq_bigr => j _; rewrite !coef_map.
 Qed.
 
-Canonical phi_rmorphism := RMorphism phi_is_rmorphism.
+End RingPseudoDivision1.
+
+Monomorphic Canonical phi_rmorphism R := RMorphism (@phi_is_rmorphism R).
+
+Section RingPseudoDivision2.
+
+Variable R : ringType.
+Implicit Types d p q r : {poly R}.
+
+Local Notation phi := (@phi R).
 
 Definition phi_inv (p : {poly R^c}) :=
   map_poly (fun x : R^c => x : R) p : {poly R}^c.
@@ -348,12 +357,12 @@ Definition rmultp_l := [rel m d | rdvdp_l d m].
 Lemma ltn_rmodp_l p q : (size (rmodp_l p q) < size q) = (q != 0).
 Proof.
 have := ltn_rmodp (phi p) (phi q).
-rewrite -(rmorph0 phi_rmorphism) (inj_eq (can_inj phiK)) => <-.
-rewrite /rmodp_l /redivp_l /rmodp; case: (redivp _ _)=> [[k q'] r'] /=.
+rewrite -(rmorph0 (@phi_rmorphism R)) (inj_eq (can_inj phiK)) => <-.
+rewrite /rmodp_l /redivp_l /rmodp; destruct redivp as [[k q'] r']; rewrite /=.
 by rewrite !size_map_inj_poly.
 Qed.
 
-End RingPseudoDivision.
+End RingPseudoDivision2.
 
 Module mon.
 
@@ -369,9 +378,17 @@ Lemma rdivp_l_eq p :
   p = d * (rdivp_l p d) + (rmodp_l p d).
 Proof.
 have mon_phi_d: phi d \is monic by rewrite monic_map_inj.
-apply:(can_inj (@phiK R)); rewrite {1}[phi p](rdivp_eq mon_phi_d) rmorphD.
+apply:(can_inj (@phiK R)).
+refine ((paths_rec_r (paths^~ (phi _)) _ (rdivp_eq mon_phi_d (phi p)))).
+rewrite rmorphD.
 rewrite rmorphM /rdivp_l /rmodp_l /redivp_l /rdivp /rmodp.
-by case: (redivp _ _)=> [[k q'] r'] /=; rewrite !phi_invK.
+refine (
+  match redivp (phi p) (phi d) as r return
+    r.1.2 * phi d + r.2 =
+      phi_rmorphism R (r.1.1, phi_inv r.1.2, phi_inv r.2).1.2 * phi_rmorphism R d +
+      phi_rmorphism R (r.1.1, phi_inv r.1.2, phi_inv r.2).2
+  with (k, q', r') => _ end).
+by rewrite /=; rewrite !phi_invK.
 Qed.
 
 End MonicDivisor.

@@ -19,7 +19,7 @@ Local Open Scope mxpresentation_scope.
 (** Coherent rings *)
 Module CoherentRing.
 
-Record mixin_of (R : ringType) : Type := Mixin {
+Monomorphic Record mixin_of (R : ringType) : Type := Mixin {
   dim_ker : forall m n, 'M[R]_(m,n) -> nat;
   ker : forall m n (M : 'M_(m,n)), 'M_(dim_ker M,m);
   _ : forall m n (M : 'M_(m,n)) (X : 'rV_m),
@@ -29,32 +29,32 @@ Record mixin_of (R : ringType) : Type := Mixin {
 Section ClassDef.
 
 (** Coherent rings are based on strongly discrete rings *)
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : StronglyDiscrete.class_of R;
   mixin : mixin_of (StronglyDiscrete.Pack base)
 }.
 Local Coercion base : class_of >-> StronglyDiscrete.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@StronglyDiscrete.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@StronglyDiscrete.Pack T b0)) :=
   fun bT b & phant_id (StronglyDiscrete.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m).
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
-Definition stronglyDiscreteType := StronglyDiscrete.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition stronglyDiscreteType := StronglyDiscrete.Pack class.
 
 End ClassDef.
 
@@ -108,7 +108,7 @@ Proof. by case: R => [? [? []]]. Qed.
 
 Lemma kerK m n (M : 'M[R]_(m,n)) : ker M *m M = 0.
 Proof.
-rewrite -row_matrixP => i; rewrite row_mul row0.
+apply: (row_matrixP _ _).1 => i; rewrite row_mul row0.
 by apply/eqP/kerP_subproof; exists (delta_mx 0 i); rewrite rowE.
 Qed.
 
@@ -353,7 +353,7 @@ apply: (iffP eqP)=> [|[Y hY]];
   rewrite -{1}[M]hsubmxK (@mul_mx_row _ _ _ 1) -(@row_mx0 _ _ 1).
   case/(@eq_row_mx _ _ 1); case/eqP/ker_colP=> V ->; rewrite -mulmxA.
   by case/eqP/ih=> W ->; exists W; rewrite mulmxA.
-f_equal; apply/eqP.
+f_ap; apply/eqP.
   by apply/ker_colP; exists (Y *m ker_c (G1 *m rsubmx M)); rewrite -mulmxA.
 by rewrite hY mulmxA -[_ *m rsubmx M]mulmxA; apply/ih; exists Y.
 Qed.
@@ -447,7 +447,7 @@ case v0 : (v == 0).
     case: (IH vs xs) => [[A HA]|[]]; last by apply/IH.
     exists (row_mx (const_mx (x 0 0)) A).
     rewrite (@mul_row_block _ _ _ _ 1) -/xs !mulmx0 add0r addr0 -colE col_const HA.
-    by f_equal; apply/rowP => i; rewrite !mxE /= !ord1.
+    by f_ap; apply/rowP => i; rewrite !mxE /= !ord1.
   rewrite -mulmxA (@mul_block_col _ _ _ 1) -/v !mul0mx addr0 add0r.
   rewrite -[W]hsubmxK mul_row_col {6}(eqP v0) !mulmx0 add0r mulmxA.
   by apply/IH; exists (rsubmx W).
@@ -465,7 +465,7 @@ apply: (iffP idP) => /= [|[W ->]].
   case: (IH vs (xs - (W *m wvs))) => [[A HA]|[]].
     exists (row_mx W A).
     rewrite (@mul_row_block _ _ _ _ 1) mulmx0 addr0 -HA addrCA subrr addr0.
-    f_equal; apply/(@scalemx_inj _ _ _ (v 0 0)).
+    f_ap; apply/(@scalemx_inj _ _ _ (v 0 0)).
     (* The proof breaks down here if strongly discrete rings are not idomains! *)
       apply/negP => v00; case/negP: v0; apply/eqP.
       by apply/rowP => i; rewrite !ord1 /= (eqP v00) !mxE.
@@ -582,8 +582,9 @@ case: (bcap_int h1 h2) => D hD.
 by exists D.
 Qed.
 
-Definition bezout_coherentMixin := int_coherentMixin bcap_spec.
-Canonical Structure bezout_coherentType :=
-  Eval hnf in CoherentRingType R bezout_coherentMixin.
-
 End BezoutCoherent.
+
+Monomorphic Definition bezout_coherentMixin (R : bezoutDomainType) :=
+  int_coherentMixin (@bcap_spec R).
+Monomorphic Canonical Structure bezout_coherentType (R : bezoutDomainType) :=
+  Eval hnf in CoherentRingType R (bezout_coherentMixin R).

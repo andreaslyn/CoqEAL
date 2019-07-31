@@ -118,7 +118,7 @@ set b2 := \big[*%R/1]_( _ < _ ) _.
 suff -> : b1 = b2 by rewrite subrr mulr0.
 rewrite /b1 {b1} /b2 {b2} (bigD1 j) //= (bigD1 i) //=.
 rewrite [RHS](bigD1 j) //= [X in _ = _ * X](bigD1 i) //=.
-rewrite !permM tpermR tpermL hf !mulrA.
+rewrite !permM tpermR tpermL. rewrite -> hf; rewrite !mulrA.
 congr (_ * _).
   by rewrite -!mulrA; congr (_ * _); rewrite mulrC -mulrA mulrCA.
 by apply/eq_big => // x /andP [h1 h2]; rewrite permM tpermD // eq_sym.
@@ -501,8 +501,7 @@ Qed.
 Lemma strictf_uniq : forall m n (f g: {ffun 'I_m -> 'I_n}),
   strictf f -> strictf g -> same_codom f g -> f = g.
 Proof.
-clear A B Z R k l.
-elim => [ | m hi] n f g hf hg hsame; apply/ffunP.
+clear A B Z R k l.  elim => [ | m hi] n f g hf hg hsame; apply/ffunP.
 - by case.
 move/forallP : (hf) => hf1.
 move/forallP : (hg) => hg1.

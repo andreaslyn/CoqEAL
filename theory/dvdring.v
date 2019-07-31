@@ -3,6 +3,7 @@
 From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat div seq path.
 From mathcomp Require Import ssralg fintype perm tuple choice.
 From mathcomp Require Import matrix bigop zmodp mxalgebra poly.
+Require Import HoTT.ssr.Wf.
 
 (* Require Import generic_quotient. (* testing *) *)
 
@@ -48,42 +49,42 @@ End GUARD.
 Module DvdRing.
 
 (* Specification of division: div_spec a b == b | a *)
-CoInductive div_spec (R : ringType) (a b :R) : option R -> Type :=
+Monomorphic CoInductive div_spec (R : ringType) (a b :R) : option R -> Type :=
 | DivDvd x of a = x * b : div_spec a b (Some x)
 | DivNDvd of (forall x, a != x * b) : div_spec a b None.
 
-Record mixin_of (R : ringType) : Type := Mixin {
+Monomorphic Record mixin_of (R : ringType) : Type := Mixin {
   div : R -> R -> option R;
   _ : forall a b, div_spec a b (div a b)
   }.
 
 Section ClassDef.
 
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : GRing.IntegralDomain.class_of R;
   mixin : mixin_of (GRing.IntegralDomain.Pack base)
 }.
 Local Coercion base : class_of >-> GRing.IntegralDomain.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@GRing.IntegralDomain.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@GRing.IntegralDomain.Pack T b0)) :=
   fun bT b & phant_id (GRing.IntegralDomain.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m).
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
 
 End ClassDef.
 
@@ -669,40 +670,40 @@ Hint Resolve eqdd.
 
 Module GcdDomain.
 
-Record mixin_of (R : dvdRingType) : Type := Mixin {
+Monomorphic Record mixin_of (R : dvdRingType) : Type := Mixin {
   gcdr : R -> R -> R;
   _ : forall d a b, d %| gcdr a b = (d %| a) && (d %| b)
 }.
 
 Section ClassDef.
 
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : DvdRing.class_of R;
   mixin : mixin_of (DvdRing.Pack base)
 }.
 Local Coercion base : class_of >-> DvdRing.class_of.
 
 (* Structure = Record *)
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@DvdRing.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@DvdRing.Pack T b0)) :=
   fun bT b & phant_id (DvdRing.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m).
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
-Definition dvdRingType := DvdRing.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition dvdRingType := DvdRing.Pack class.
 
 End ClassDef.
 
@@ -1275,43 +1276,43 @@ End GCDDomainTheory.
 
 Module BezoutDomain.
 
-CoInductive bezout_spec (R : gcdDomainType) (a b : R) : R * R -> Type:=
+Monomorphic CoInductive bezout_spec (R : gcdDomainType) (a b : R) : R * R -> Type:=
   BezoutSpec x y of gcdr a b %= x * a + y * b : bezout_spec a b (x, y).
 
-Record mixin_of (R : gcdDomainType) : Type := Mixin {
+Monomorphic Record mixin_of (R : gcdDomainType) : Type := Mixin {
   bezout : R -> R -> (R * R);
    _ : forall a b, bezout_spec a b (bezout a b)
 }.
 
 Section ClassDef.
 
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : GcdDomain.class_of R;
   mixin : mixin_of (GcdDomain.Pack base)
 }.
 Local Coercion base : class_of >-> GcdDomain.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@GcdDomain.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@GcdDomain.Pack T b0)) :=
   fun bT b & phant_id (GcdDomain.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m).
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
-Definition dvdRingType := DvdRing.Pack class.
-Definition gcdDomainType := GcdDomain.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition dvdRingType := DvdRing.Pack class.
+Monomorphic Definition gcdDomainType := GcdDomain.Pack class.
 
 End ClassDef.
 
@@ -1354,6 +1355,12 @@ Export BezoutDomain.Exports.
 
 Definition bezout R := BezoutDomain.bezout (BezoutDomain.class R).
 
+Monomorphic CoInductive egcdr_spec (R : bezoutDomainType) a b : R * R * R * R * R -> Type :=
+  EgcdrSpec g u v a1 b1 of u * a1 + v * b1 = 1
+                         & g %= gcdr a b
+                         & a = a1 * g
+                         & b = b1 * g : egcdr_spec a b (g, u, v, a1, b1).
+
 Section BezoutDomainTheory.
 
 Variable R : bezoutDomainType.
@@ -1372,12 +1379,6 @@ Definition egcdr a b :=
       let a1 := odflt 0 (a %/? g) in
         let b1 := odflt 0 (b %/? g) in
           if g == 0 then (0,1,0,1,0) else (g, u, v, a1, b1).
-
-CoInductive egcdr_spec a b : R * R * R * R * R -> Type :=
-  EgcdrSpec g u v a1 b1 of u * a1 + v * b1 = 1
-                         & g %= gcdr a b
-                         & a = a1 * g
-                         & b = b1 * g : egcdr_spec a b (g, u, v, a1, b1).
 
 Lemma egcdrP a b : egcdr_spec a b (egcdr a b).
 Proof.
@@ -1448,7 +1449,7 @@ Lemma principal_w1_correct : forall n (I : 'cV[R]_n),
 Proof.
 elim => [I | n ih]; first by rewrite flatmx0 mulmx0 /principal rmorph0.
 rewrite [n.+1]/(1 + n)%nat => I.
-rewrite -[I]vsubmxK /principal /= col_mxKd {-2}vsubmxK.
+rewrite -[I]vsubmxK /principal /= col_mxKd {1 2 4}vsubmxK.
 case: egcdrP => g u v a1 b1 hbezout _ h1 h2 /=.
 rewrite [row_mx u%:M _ *m _]mul_row_col -scalemxAl ih /principal h2.
 have -> : usubmx I = (I 0 0)%:M.
@@ -1616,40 +1617,40 @@ End BezoutDomainTheory.
 
 Module PID.
 
-Record mixin_of (R : dvdRingType) : Type := Mixin {
+Monomorphic Record mixin_of (R : dvdRingType) : Type := Mixin {
   _ : well_founded (@sdvdr R)
 }.
 
 Section ClassDef.
 
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : BezoutDomain.class_of R;
   mixin : mixin_of (DvdRing.Pack base)
 }.
 Local Coercion base : class_of >-> BezoutDomain.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@DvdRing.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@DvdRing.Pack T b0)) :=
   fun bT b & phant_id (BezoutDomain.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m).
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
-Definition dvdRingType := DvdRing.Pack class.
-Definition gcdDomainType := GcdDomain.Pack class.
-Definition bezoutDomainType := BezoutDomain.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition dvdRingType := DvdRing.Pack class.
+Monomorphic Definition gcdDomainType := GcdDomain.Pack class.
+Monomorphic Definition bezoutDomainType := BezoutDomain.Pack class.
 
 End ClassDef.
 
@@ -1706,12 +1707,12 @@ End PIDTheory.
 
 Module EuclideanDomain.
 
-CoInductive edivr_spec (R : ringType)
+Monomorphic CoInductive edivr_spec (R : ringType)
   (norm : R -> nat) (a b : R) : R * R -> Type :=
   EdivrSpec q r of a = q * b + r & (b != 0) ==> (norm r < norm b)
   : edivr_spec norm a b (q,r).
 
-Record mixin_of (R : ringType) : Type := Mixin {
+Monomorphic Record mixin_of (R : ringType) : Type := Mixin {
   enorm : R -> nat;
   ediv : R -> R -> (R * R);
   _ : forall a b, a != 0 -> enorm b <= enorm (a * b);
@@ -2013,35 +2014,35 @@ End Bezout.
 
 Section ClassDef.
 
-Record class_of (R : Type) : Type := Class {
+Monomorphic Record class_of (R : Type) : Type := Class {
   base  : PID.class_of R;
   mixin : mixin_of (GRing.Ring.Pack base)
 }.
 Local Coercion base : class_of >-> PID.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Monomorphic Structure type : Type := Pack {sort : Type; _ : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 
-Variable (T : Type) (cT : type).
-Definition class := let: Pack _ c := cT return class_of cT in c.
-Definition clone c of phant_id class c := @Pack T c.
+Monomorphic Variable (T : Type) (cT : type).
+Monomorphic Definition class := let: Pack _ c := cT return class_of cT in c.
+Monomorphic Definition clone c of phant_id class c := @Pack T c.
 
-Definition pack b0 (m0 : mixin_of (@GRing.Ring.Pack T b0)) :=
+Monomorphic Definition pack b0 (m0 : mixin_of (@GRing.Ring.Pack T b0)) :=
   fun bT b & phant_id (PID.class bT) b =>
   fun    m & phant_id m m0 => Pack (@Class T b m).
 
-Definition eqType := Equality.Pack class.
-Definition choiceType := Choice.Pack class.
-Definition zmodType := GRing.Zmodule.Pack class.
-Definition ringType := GRing.Ring.Pack class.
-Definition comRingType := GRing.ComRing.Pack class.
-Definition unitRingType := GRing.UnitRing.Pack class.
-Definition comUnitRingType := GRing.ComUnitRing.Pack class.
-Definition idomainType := GRing.IntegralDomain.Pack class.
-Definition dvdRingType := DvdRing.Pack class.
-Definition gcdDomainType := GcdDomain.Pack class.
-Definition bezoutDomainType := BezoutDomain.Pack class.
-Definition pidType := PID.Pack class.
+Monomorphic Definition eqType := Equality.Pack class.
+Monomorphic Definition choiceType := Choice.Pack class.
+Monomorphic Definition zmodType := GRing.Zmodule.Pack class.
+Monomorphic Definition ringType := GRing.Ring.Pack class.
+Monomorphic Definition comRingType := GRing.ComRing.Pack class.
+Monomorphic Definition unitRingType := GRing.UnitRing.Pack class.
+Monomorphic Definition comUnitRingType := GRing.ComUnitRing.Pack class.
+Monomorphic Definition idomainType := GRing.IntegralDomain.Pack class.
+Monomorphic Definition dvdRingType := DvdRing.Pack class.
+Monomorphic Definition gcdDomainType := GcdDomain.Pack class.
+Monomorphic Definition bezoutDomainType := BezoutDomain.Pack class.
+Monomorphic Definition pidType := PID.Pack class.
 
 End ClassDef.
 

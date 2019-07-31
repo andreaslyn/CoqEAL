@@ -56,7 +56,7 @@ Lemma upper_triangular_mxP m n {M : 'M_(m,n)} :
   reflect (forall (i : 'I_m) (j : 'I_n), j < i -> M i j = 0)
           (upper_triangular_mx M).
 Proof.
-apply/(iffP idP)=> [H i j Hij|H].
+apply: (iffP idP) => [H i j Hij|H].
   rewrite /upper_triangular_mx in H.
   by move/eqP: H=> ->; rewrite mxE leqNgt Hij.
 apply/eqP/matrixP=> i j; rewrite mxE leqNgt.

@@ -1,3 +1,9 @@
+-I /home/andreas/Source/paramcoq/src
+-R /home/andreas/Source/math-comp/mathcomp mathcomp
+#-R /home/andreas/Source/math-comp/bigenough mathcomp.bigenough
+#-R /home/andreas/Source/math-comp/finmap mathcomp.finmap
+#-R /home/andreas/Source/math-comp/multinomials SsrMultinomials
+
 theory/atomic_operations.v
 theory/bareiss_dvdring.v
 theory/bareiss.v

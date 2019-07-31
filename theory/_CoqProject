@@ -1,4 +1,5 @@
 -R . CoqEAL.theory
+-R /home/andreas/Source/math-comp-coq/mathcomp mathcomp
 
 atomic_operations.v
 bareiss_dvdring.v
